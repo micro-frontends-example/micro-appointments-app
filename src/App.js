@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { createBrowserHistory } from 'history';
+import React, { useEffect, useState } from 'react';
+import { Router } from 'react-router-dom';
+import styled from 'styled-components';
+import AppointmentsList from './AppointmentsList';
+import Loading from './Loading';
 
-function App() {
+const MainColumn = styled.div`
+  max-width: 1150px;
+  margin: 0 auto;
+`;
+
+const defaultHistory = createBrowserHistory();
+
+export const App = ({ history }) => {
+
+  const [appointments, setAppointments] = useState({});
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const host = process.env.REACT_APP_CONTENT_HOST;
+    fetch(`${host}/appointments.json`)
+      .then(result => result.json())
+      .then(appointments => {
+        setAppointments(appointments);
+        setLoading(false);
+      })
+      .catch(() => {
+        setAppointments({})
+      });
+  }, [history]);
+
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router history={history || defaultHistory}>
+      <MainColumn>
+        <AppointmentsList
+          appointments={appointments}
+        />
+      </MainColumn>
+    </Router>
   );
-}
+};
 
 export default App;
